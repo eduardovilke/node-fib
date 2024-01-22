@@ -1,11 +1,17 @@
 const express = require('express')
+const { Worker } = require('worker_threads')
 const app = express()
 const port = 3000
 
-function calculateFibonacci(num) {
-  if(num === 0 || num === 1) return num;
+function calculateFibonacciAsync(number, callback) {
+  const worker = new Worker('./src/fibonacciWorker.js');
 
-  return calculateFibonacci(num - 1) + calculateFibonacci(num - 2);
+  worker.on('message', result => {
+    callback(result);
+    worker.terminate();
+  });
+
+  worker.postMessage(number);
 }
 
 app.get('/hello/:name', (req, res) => {
@@ -15,7 +21,9 @@ app.get('/hello/:name', (req, res) => {
 app.get('/fibonacci/:number', (req, res) => {
   const { number } = req.params;
 
-  res.send(`<h1>${calculateFibonacci(+number)}</h1>`)
+  calculateFibonacciAsync(+number, result => {
+    res.json({ result });
+  });
 })
 
 app.listen(port, () => {
