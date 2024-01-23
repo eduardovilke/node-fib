@@ -16,7 +16,7 @@ app.get('/fibonacci/:number', (req, res) => {
   const { number } = req.params;
   const result = calculateFibonacci(+number);
 
-  res.send({ result })
+  res.json({ result })
 })
 
 app.listen(port, () => {
